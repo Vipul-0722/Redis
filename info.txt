@@ -1,0 +1,182 @@
+
+
+Redis : open source , in-memory data ( RAM )-primary memory store
+
+
+user     -------->         server           -----> Postgres
+
+                    lots of query from DB
+
+Problem : when user refresh page , unnecessay data is query again , bill increases , user waiting time increase ,etc
+
+1. Requery
+2. Response time increases
+
+
+1. Architechture
+
+To solve this problem we have redis
+                                                            ==> Yes , then return
+user hit api ==> Server ask redis ==> is cache data present 
+                                                            ==> No ==> fetch from database ,give it to redis to store 
+
+                         
+                        ------> redis (data not present) cache for future
+user --->     server    ------> asking for data (say no, and server fetch from database)
+                |       <------ redis (data present) send it to server
+                |         
+                |
+              Database    
+
+
+Redis store Comupted Data:
+
+Usecase => chat app unread msg count
+
+      ------> chat server ----> check db
+user              |            
+                  |
+            process db ad got 10 count
+                  |
+                  |
+    store in reddis for future purpose only count no need of msg
+                  10    
+
+
+2. Installation 
+can directly install from website
+or from Docker
+
+   => redis work on command line => so we need GUI => we have Redis stack
+
+   docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+   on 8001 u will find GUI client 
+
+   u can interact with redis server via GUI cli or from Command line
+
+   just go in container and run 
+   
+   redis-cli
+
+With nodeJS u need ioredis to interact with redis
+
+
+3. Redis Data type 
+
+ 1. String
+
+   1. set name Vipul (name=Vipul)  => get name 
+                       write                        read
+   2. mget user:1 user:2
+
+   3. mset msg:1 "hey" msg:2 "hru"
+
+   4. set count 0
+
+   5. incr count
+
+1. SET stores a string value.
+2. SETNX stores a string value only if the key doesn't already exist. Useful for implementing locks.
+3. GET retrieves a string value.
+4.  MGET retrieves multiple string values in a single operation.
+
+
+
+Naming convention  => <entity>:<id> value
+
+   Table: user
+   id     name         
+   1.     Abhay    ==>   user:1 Abhay
+   2.     Ayush    ==>   user:2 Ayush 
+   3.     Vipul
+
+This create group of "user" on basis of : 
+user -> will has 3 key 
+
+2. list ( Queue, Stack )
+Redis lists are linked lists of string values. Redis lists are frequently used to:
+
+Implement stacks and queues.
+Build queue management for background worker systems.
+
+
+    list can act as both queue and stack 
+    make list horizontal => queue 
+    make list vertical   => stack 
+
+LPUSH adds a new element to the head of a list; RPUSH adds to the tail.
+
+LPOP removes and returns an element from the head of a list; RPOP does the same but from the tails of a list.
+
+LLEN returns the length of a list.
+
+LMOVE atomically moves elements from one list to another.
+
+LRANGE extracts a range of elements from a list.
+
+LTRIM reduces a list to the specified range of elements.
+
+
+ left  --------------------------Right 
+
+ lpush message hey   =>  hey
+
+ lpush message hello =>  hello hey
+
+
+ 1. Queue 
+    Left  -> Push 
+    Right -> Pop 
+
+ 
+ 1. Stack 
+    Left  -> Push 
+    Left -> Pop 
+    
+
+BLPOP removes and returns an element from the head of a list. If the list is empty, the command blocks until an element becomes available or until the specified timeout is reached.
+
+BLMOVE atomically moves elements from a source list to a target list. If the source list is empty, the command will block until a new element becomes available.
+
+
+BLPOP message 10
+
+pop from left, but when msg is empty it will wait for 10sec , if nothing comes for 10sec then return null 
+if something comes in 10 sec then it will return that
+   
+
+3. SET
+A Redis set is an unordered collection of unique strings (members). You can use Redis sets to efficiently:
+
+Track unique items (e.g., track all unique IP addresses accessing a given blog post).
+Represent relations (e.g., the set of all users with a given role).
+Perform common set operations such as intersection, unions, and differences.
+
+
+SADD adds a new member to a set.
+
+SREM removes the specified member from the set.
+
+SISMEMBER tests a string for set membership.
+
+SINTER returns the set of members that two or more sets have in common (i.e., the intersection).
+
+SCARD returns the size (a.k.a. cardinality) of a set.
+  
+
+  4. Hash map
+
+  5. sorted set => priority queue
+
+  6. Redis stream similar to kafka 
+      fast moving data can be into kafka
+       
+      below data is very fast moving data 
+      Event sourcing (e.g., tracking user actions, clicks, etc.)
+      Sensor monitoring (e.g., readings from devices in the field)
+      Notifications (e.g., storing a record of each user's notifications in a separate stream)
+
+  7. Geospatial data = location data longitude latitide
+      GEOADD adds a location to a given geospatial index (note that longitude comes before latitude with this command).
+      GEOSEARCH returns locations with a given radius or a bounding box.
